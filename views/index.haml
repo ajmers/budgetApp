@@ -1,0 +1,47 @@
+%html
+    %head
+        %title= @receipt[:name]
+        =js(path='jquery-1.11.2.min')
+        =js(path='highcharts.src')
+
+    %body
+        %h1 Hello World
+        %h2= @receipt[:name]
+        #chart{ :style => "width: 700px; height:400px;" }
+
+        :javascript
+            console.log("#{@receipt[:name]}");
+
+            var chart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'chart',
+                    type: 'column'
+                },
+                title: {
+                    text: 'Stacked bar chart'
+                },
+                xAxis: {
+                    categories: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Total fruit consumption'
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        stacking: 'normal'
+                    }
+                },
+                series: [{
+                    name: '#{@cats}[0]',
+                    data: [5, 3, 4, 7, 2, 2, 3, 5, 3, 4, 7, 2]
+                }, {
+                    name: '#{@cats}[1]',
+                    data: [2, 2, 3, 2, 1, 4, 2, 2, 2, 3, 2, 1]
+                }, {
+                    name: '#{@cats}[2]',
+                    data: [3, 4, 4, 2, 5, 2, 2, 3, 4, 4, 2, 5]
+                }]
+            });
