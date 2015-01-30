@@ -12,8 +12,8 @@ categories_arr = db["select distinct items.expense from items join receipts on r
 
 year_months_sql = "select distinct to_char(date, 'YYYY-MM') as year_month from receipts where to_char(date, 'YYYY-MM')>= ? order by year_month asc"
 
-costsSql = "select round(sum(amount), 2) as amount,
-    date_part('month', date) as month
+costs_sql = "select round(sum(amount), 2) as amount,
+    to_char(date, 'YYYY-MM') as month
     from receipts join items
     on receipts.item = items.item
     where items.expense = ?
@@ -26,54 +26,60 @@ earliest_date = Date.strptime("2010-07", "%Y-%m")
 
 get '/' do
     puts params
-    seriesArray = []
+    series_array = []
 
     @year_months = db.fetch(year_months_sql, earliest_date).map(:year_month)
     @cats = categories_arr
 
     @cats.each do |cat|
         series = Hash.new
-        data = db.fetch(costsSql, cat, earliest_date)#.map{|x| x[:amount].to_f}
+        data = db.fetch(costs_sql, cat, earliest_date)#.map{|x| x[:amount].to_f}
 
-        dataArr = Array.new(@year_months.length, 0)
+        data_array = Array.new
         data.each do |x|
-            index = x[:month]-1
-            dataArr[index] = x[:amount].to_f
+            data_array.push(x[:amount].to_f)
         end
         series['name'] = cat
-        series['data'] = dataArr
-        seriesArray.push(series)
+        series['data'] = data_array
+        series_array.push(series)
     end
 
-    @series = seriesArray.to_json
-    puts @series
+    @series = series_array.to_json
     haml :index
 end
 
 post '/' do
     puts params
-    seriesArray = []
+    series_array = []
 
     @date = Date.strptime(params[:date], "%Y-%m")
+    puts @date
+
     @year_months = db.fetch(year_months_sql, params[:date]).map(:year_month)
+    puts @year_months
+    puts @year_months.length
     @cats = categories_arr
+    puts @cats
 
     @cats.each do |cat|
         series = Hash.new
-        data = db.fetch(costsSql, cat, @date)#.map{|x| x[:amount].to_f}
+        data = db.fetch(costs_sql, cat, @date)#.map{|x| x[:amount].to_f}
+        puts data
 
-        dataArr = Array.new(@year_months.length, 0)
+        data_array = Array.new
         data.each do |x|
-            index = x[:month]-1
-            dataArr[index] = x[:amount].to_f
+            data_array.push(x[:amount].to_f)
+            if data_array.length >= 12
+                break
+            end
         end
         series['name'] = cat
-        series['data'] = dataArr
-        seriesArray.push(series)
+        series['data'] = data_array
+        puts series
+        series_array.push(series)
     end
 
-    @series = seriesArray.to_json
-    puts @series
+    @series = series_array.to_json
     haml :index
 end
 
