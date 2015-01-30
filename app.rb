@@ -36,8 +36,28 @@ get '/' do
         data = db.fetch(costs_sql, cat, earliest_date)#.map{|x| x[:amount].to_f}
 
         data_array = Array.new
+        index = 0
         data.each do |x|
-            data_array.push(x[:amount].to_f)
+            puts index
+            puts x
+            puts x[:month]
+            puts @year_months[index]
+
+            until x[:month] <= @year_months[index] do
+                puts 'nothing for this month, pushing 0'
+                data_array.push(0)
+                index += 1
+            end
+
+            if x[:month] == @year_months[index]
+                puts 'pushing amount'
+                data_array.push(x[:amount].to_f)
+                index += 1
+            else
+                puts 'pushing 0'
+                data_array.push(0)
+            end
+
         end
         series['name'] = cat
         series['data'] = data_array
@@ -67,8 +87,28 @@ post '/' do
         puts data
 
         data_array = Array.new
+        index = 0
         data.each do |x|
-            data_array.push(x[:amount].to_f)
+            puts index
+            puts x
+            puts x[:month]
+            puts @year_months[index]
+
+            until x[:month] <= @year_months[index] do
+                puts 'nothing for this month, pushing 0'
+                data_array.push(0)
+                index += 1
+            end
+
+            if x[:month] == @year_months[index]
+                puts 'pushing amount'
+                data_array.push(x[:amount].to_f)
+                index += 1
+            else
+                puts 'pushing 0'
+                data_array.push(0)
+            end
+
             if data_array.length >= 12
                 break
             end
