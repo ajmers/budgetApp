@@ -29,6 +29,9 @@
                 },
                 yAxis: {
                     min: 0,
+                    labels: {
+                        enabled: false
+                    },
                     title: {
                         text: 'amount $'
                     }
@@ -38,5 +41,5 @@
                         stacking: 'normal'
                     }
                 },
-                series: #{@series}
+                series: #{@series},
             });
