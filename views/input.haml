@@ -1,0 +1,14 @@
+%html
+    %head
+        =js(path='jquery-1.11.2.min')
+        =js(path='highcharts.src')
+
+    %body
+        %form{:method => 'post'}
+            %select{:action => '/', :name => "date"}
+                -@year_months.each do |y_m|
+                    =value, text = y_m
+                    %option{:value => value} #{y_m}
+
+            %input{ :type => "submit", :name => "submit", :value => "submit" }
+
