@@ -8,8 +8,9 @@ set :haml, :format => :html5
 
 db = Sequel.connect('postgres://localhost/budget')
 
-categories_arr = db["select distinct items.expense from items join receipts on receipts.item = items.item where receipts.item like '1%' order by items.expense"].map(:expense)
+items_sql = "select distinct item from receipts order by item asc"
 
+categories_arr = db["select distinct items.expense from items join receipts on receipts.item = items.item where receipts.item like '1%' order by items.expense"].map(:expense)
 
 year_months_sql = "select distinct to_char(date, 'YYYY-MM') as year_month from receipts where to_char(date, 'YYYY-MM')>= ? order by year_month asc"
 
@@ -40,8 +41,31 @@ get '/' do
     haml :input
 end
 
-post '/' do
+get '/receipts/new' do
+    @columns = {
+        'date'=> {'type' => 'date'},
+        'name'=> {'type' => 'text'},
+        'amount'=> {'type' => 'number'},
+        'description'=> {'type' => 'text'},
+        'item'=> {'type' => 'select'},
+        'method'=> {'type' => 'text'},
+        'funding'=> {'type' => 'text'},
+        'expense'=> {'type' => 'text'},
+        'envelope'=> {'type' => 'text'},
+        'roommate'=> {'type' => 'text'},
+        'notes'=> {'type' => 'text'},
+        'tag'=> {'type' => 'text'}
+        }
+    @items = db.fetch(items_sql).map(:item)
+
+    haml :new_receipt
+end
+
+post '/receipts/new' do
     puts params
+end
+
+post '/' do
     series_array = []
     drilldown_array = []
 
@@ -72,9 +96,7 @@ end
 def set_series_data(data, data_array)
     data.each do |x|
         index = data_array.index(x[:month])
-        puts index
         if index
-            puts x[:amount].to_f
             data_array[index] = x[:amount].to_f
         end
         data_array.each do |x|

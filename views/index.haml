@@ -1,45 +1,39 @@
-%html
-    %head
-        =js(path='jquery-1.11.2.min')
-        =js(path='highcharts.src')
+%form{:method => 'post'}
+    %select{:action => '/', :name => "date"}
+        -@year_months.each do |y_m|
+            =value, text = y_m
+            %option{:value => value} #{y_m}
 
-    %body
-        %form{:method => 'post'}
-            %select{:action => '/', :name => "date"}
-                -@year_months.each do |y_m|
-                    =value, text = y_m
-                    %option{:value => value} #{y_m}
+    %input{ :type => "submit", :name => "submit", :value => "submit" }
 
-            %input{ :type => "submit", :name => "submit", :value => "submit" }
+#chart{ :style => "width: 700px; height:500px; margin:0 auto;" }
 
-        #chart{ :style => "width: 700px; height:500px; margin:0 auto;" }
+:javascript
 
-        :javascript
-
-            var chart = new Highcharts.Chart({
-                chart: {
-                    renderTo: 'chart',
-                    type: 'column'
-                },
-                title: {
-                    text: 'Spending 2014'
-                },
-                xAxis: {
-                    categories: #{@year_months}
-                },
-                yAxis: {
-                    min: 0,
-                    labels: {
-                        enabled: false
-                    },
-                    title: {
-                        text: 'amount $'
-                    }
-                },
-                plotOptions: {
-                    series: {
-                        stacking: 'normal'
-                    }
-                },
-                series: #{@series},
-            });
+    var chart = new Highcharts.Chart({
+        chart: {
+            renderTo: 'chart',
+            type: 'column'
+        },
+        title: {
+            text: 'Spending 2014'
+        },
+        xAxis: {
+            categories: #{@year_months}
+        },
+        yAxis: {
+            min: 0,
+            labels: {
+                enabled: false
+            },
+            title: {
+                text: 'amount $'
+            }
+        },
+        plotOptions: {
+            series: {
+                stacking: 'normal'
+            }
+        },
+        series: #{@series},
+    });
