@@ -1,15 +1,16 @@
 %form#new_receipt{:method=> 'post', :action => '/receipts/new', :name => 'receipt'}
+    -counter=0
     -@columns.each do |key, value|
-        .column
+        .input
             %label{ :for => key } #{key.capitalize}
-            -if key == 'item'
+            -if key == :item
                 %select{ :name => 'item' }
                     -@items.each do |item|
                         =value, text = item
                         %option{:value => value} #{item}
             -else
-                %input{ :type => value['type'], :name => key}
-    .column
+                %input{ :type => value[:type], :name => key, :step => 'any'}
+    .submit
         %input{ :type => "submit", :name => "submit", :value => "submit" }
 
 

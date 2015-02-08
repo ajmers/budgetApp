@@ -4,4 +4,11 @@
         =js(path='scripts/highcharts.src')
         %link{:rel => :stylesheet, :type => :"text/css", :href => "/stylesheets/main.css"}
     %body
-        =yield
+        #sidebar
+            .menu
+                %a{ :href=> '/items', :title => 'Items'} Items & Categories
+                %a{ :href=> '/methods', :title => 'Payment Methods'} Payment Methods
+                %a{ :href=> '/receipts', :title=> 'Receipts'} Receipts
+
+        #content
+            =yield

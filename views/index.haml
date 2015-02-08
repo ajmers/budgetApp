@@ -1,6 +1,6 @@
 %form{:method => 'post'}
     %select{:action => '/', :name => "date"}
-        -@year_months.each do |y_m|
+        -@all_year_months.each do |y_m|
             =value, text = y_m
             %option{:value => value} #{y_m}
 
@@ -16,7 +16,7 @@
             type: 'column'
         },
         title: {
-            text: 'Spending 2014'
+            text: 'Spending'
         },
         xAxis: {
             categories: #{@year_months}
