@@ -1,49 +1,28 @@
 /* Layout */
+html * { font-family: Raleway;}
 
-#content {
-    padding-left: 300px;
-    display: inline-block;
-}
-#sidebar {
-    position: absolute;
-    background-color: darkorange;
-    width: 300px;
-    display: inline-block;
-    height: 100%;
-}
-
-#sidebar .menu {
-    padding-top: 200px;
-}
-
-#sidebar a {
-    display: block;
-    font-size: 22px;
-    text-decoration: none;
-    padding-top: 10px;
-    color: white;
-    font-family: arial;
-    padding-left: 15px;
-}
-
-#sidebar a:hover {
-    color: lightblue;
-}
+#content { position: relative; padding-left: 315px; display: inline-block; }
+#sidebar { position: fixed; background-color: darkorange; width: 300px; display: inline-block; height: 100%; margin-top: 20px; top: 0px; z-index: 1;}
+#sidebar .menu { z-index: 28; position: relative; padding-top: 200px; }
+#sidebar .menu a { display: block; font-size: 22px; text-decoration: none; padding-top: 10px; color: white; padding-left: 15px; }
+#sidebar a:hover { color: lightblue; }
 
 /* Forms */
+form#new_receipt { background-color: lightblue; top: 0px; position: fixed; width: 260px; margin: 0 auto; right: 0; margin-top: 20px; margin-right: 20px;}
+form#new_receipt input, form#new_receipt select { float: right; }
+form#new_receipt .input { display: block; padding: 10px; }
 
-form#new_receipt {
-    width: 260px;
-    margin: 0 auto;
-}
+/* Table */
+#content table { width: 809px; margin-top: 25px; display: inline-block;}
+#content table thead tr th { font-weight: bold; padding-bottom: 10px; text-align: left; }
+#content table td { padding-right: 10px}
+#content table td.hide {display: none;}
+#content table th.hide {display: none;}
+#content table td.amount {text-align: right;}
+td.description, td.funding, td.expense, td.envelope, td.roommate, td.notes, td.tag {display: none;}
+td.date, th.date { width: 15%}
+td.method { width: 16%;}
+#content table tbody tr:hover {background-color: lightblue;}
 
-form#new_receipt input, form#new_receipt select {
-    float: right;
-}
-
-form#new_receipt .input {
-    display: block;
-    padding: 10px;
-}
 
 

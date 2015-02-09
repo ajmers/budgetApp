@@ -35,5 +35,13 @@
                 stacking: 'normal'
             }
         },
-        series: #{@series},
+        series: [{
+                    data: #{@costs_series}
+                }
+                /*{
+                    type: 'spline',
+                    data: #{@income_series}
+                }
+                */
+            ]
     });

@@ -1,0 +1,12 @@
+%table#receipts
+    %thead.columns
+        %tr
+        -@columns.each do |key, value|
+            -if value[:display]=='show'
+                %th{ :class => key} #{key.capitalize}
+    %tbody.data
+        -@receipts.each do |column|
+            %tr
+                -column.each do |key, value|
+                    -print = key == :amount ? '$' << value.to_f.to_s : value
+                    %td{:class => key} #{print}

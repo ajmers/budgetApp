@@ -10,16 +10,42 @@ set :haml, :format => :html5
 db = Sequel.connect('postgres://localhost/budget')
 
 class Item < Sequel::Model; end
-
 class Receipt < Sequel::Model; end
 
 defaults = {:funding => 'General', :expense => 'Personal' }
 
+columns = {
+   :date=> {:type => 'date', :display => 'show'},
+   :amount=> {:type => 'number', :display => 'show'},
+   :name=> {:type => 'text', :display => 'show'},
+   :description=> {:type => 'text', :display => 'hide'},
+   :item=> {:type => 'select', :display => 'show'},
+   :method=> {:type => 'text', :display => 'show'},
+   :funding=> {:type => 'text', :display => 'hide'},
+   :expense=> {:type => 'text', :display => 'hide'},
+   :envelope=> {:type => 'text', :display => 'hide'},
+   :roommate=> {:type => 'text', :display => 'hide'},
+   :notes=> {:type => 'text', :display => 'hide'},
+   :tag=> {:type => 'text', :display => 'hide'}
+}
+
 items_set = Receipt.order(Sequel.asc(:item)).distinct(:item)
 #items_sql = "select distinct item from receipts order by item asc"
 
+receipts_set = Receipt.order(Sequel.desc(:date))
+
 categories_set = Item.order(Sequel.asc(:expense)).grep(:item, '1%').distinct(:expense).map(:expense)
 #categories_arr = db["select distinct items.expense from items join receipts on receipts.item = items.item where receipts.item like '1%' order by items.expense"].map(:expense)
+
+income_sql = "select round(sum(amount), 2) as amount,
+    to_char(date, 'YYYY-MM') as month
+    from receipts join items
+    on receipts.item = items.item
+    where items.expense = 'Primary income'
+        and date >= ?
+        and funding='General'
+    group by items.expense, month
+    order by month asc;"
 
 year_months_sql = "select distinct to_char(date, 'YYYY-MM') as year_month from receipts where to_char(date, 'YYYY-MM')>= ? order by year_month asc"
 
@@ -41,33 +67,29 @@ subcategory_costs_sql = "select round(sum(amount), 2) as amount,
     group by item, month
     order by item desc"
 
-earliest_date = Date.strptime("2010-07", "%Y-%m")
+earliest_date = Receipt.select(:date).order(:date).first[:date]
+
+get '/receipts' do
+    @columns = columns.dup
+    @receipts= receipts_set.limit(100)
+    @items = items_set.map(:item)
+
+    haml :receipts
+end
 
 get '/receipts/new' do
-    @columns = {
-        :date=> {:type => 'date'},
-        :name=> {:type => 'text'},
-        :amount=> {:type => 'number'},
-        :description=> {:type => 'text'},
-        :item=> {:type => 'select'},
-        :method=> {:type => 'text'},
-        :funding=> {:type => 'text'},
-        :expense=> {:type => 'text'},
-        :envelope=> {:type => 'text'},
-        :roommate=> {:type => 'text'},
-        :notes=> {:type => 'text'},
-        :tag=> {:type => 'text'}
-        }
+    @columns = columns.dup
     @items = items_set.map(:item)
 
     haml :new_receipt
 end
 
+
+
 post '/receipts/new' do
     insert_params = {}
 
     Receipt.columns.each do |column|
-        puts column
         if params[column]
             insert_params[column] = params[column]
         end
@@ -76,51 +98,67 @@ post '/receipts/new' do
     already_exists = check_for_duplicates(insert_params)
     if not already_exists
         defaults.each do |key, value|
-            if not params[key]
-                params[key] = defaults[key]
+            sym = key.to_sym
+            puts sym
+            puts insert_params[sym].length
+            if insert_params[sym].length == 0
+                puts defaults[sym]
+                insert_params[sym] = defaults[sym]
+            else
+                puts 'all necessary params present'
+                puts sym.to_s << '-' << defaults[sym]
             end
         end
+        puts insert_params
         new = Receipt.create(insert_params)
-        puts new
-        redirect '/receipts/new'
+        redirect '/receipts'
     else
         puts 'already exists in db'
-        redirect '/receipts/new'
+        redirect '/receipts'
     end
 end
 
+
+
 route :get, :post, '/' do
-    series_array = []
+    cost_series_array = []
+    income_series_array = []
     drilldown_array = []
     puts params
 
     if params[:date]
         @date = Date.strptime(params[:date], "%Y-%m")
+        puts @date
     else
         @date = get_one_year_ago()
         puts @date
     end
 
     @all_year_months = db.fetch(year_months_sql, earliest_date).map(:year_month)
-    puts @all_year_months
     @year_months = db.fetch(year_months_sql, @date).map(:year_month)
-    puts @year_months
     @cats = categories_set
-    puts @cats
 
     @cats.each do |cat|
-        series = Hash.new
+        cost_series = Hash.new
         data = db.fetch(costs_sql, cat, @date)#.map{|x| x[:amount].to_f}
+        puts data.all
         data_array = @year_months[0..11].dup
-        series_data = set_series_data(data, data_array)
+        cost_series_data = set_series_data(data, data_array)
 
-        series['name'] = cat
-        series['data'] = series_data
-        series['drilldown'] = cat
-        series_array.push(series)
+        cost_series['name'] = cat
+        cost_series['data'] = cost_series_data
+        #cost_series['drilldown'] = cat
+        cost_series_array.push(cost_series)
     end
 
-    @series = series_array.to_json
+    income_data = db.fetch(income_sql, @date)
+    month_array = @year_months[0..11].dup
+    income_data_array = set_series_data(income_data, month_array)
+    puts income_data_array
+
+    @income_series = income_data_array
+    @costs_series = cost_series_array.to_json
+    puts @costs_series
     haml :index
 end
 
@@ -141,16 +179,16 @@ def set_series_data(data, data_array)
     return data_array
 end
 
+
 def get_one_year_ago
     return Date.strptime((Date.today.year - 1).to_s << '-' << Date.today.month.to_s, '%Y-%m')
 end
 
 def check_for_duplicates(data)
-    data.each do |x|
-        puts x
-    end
+    #data.each do |x|
+    #    puts x
+    #end
     existing = Receipt.where(:date => data[:date], :amount => data[:amount], :item => data[:item])
-    puts existing.all
-    puts existing.all.length
+    #puts existing.all.length
     return (existing.all.length > 0)
 end
