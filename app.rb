@@ -76,6 +76,7 @@ get '/receipts' do
     @columns = columns.dup
     @receipts= receipts_set.limit(100)
     @items = items_set.map(:item)
+    @methods = methods_set
 
     haml :receipts
 end
@@ -85,6 +86,7 @@ get '/receipts/new' do
     @action = '/receipts/new'
     @columns = columns.dup
     @items = items_set.map(:item)
+    @methods = methods_set
 
     haml :new_receipt
 end

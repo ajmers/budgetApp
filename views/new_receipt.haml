@@ -7,9 +7,12 @@
                     -@items.each do |item|
                         -value, text = item
                         %option{:value => value} #{item}
+            -elsif key == :method
+                %select{ :name => 'method' }
+                    -@methods.each do |method|
+                        -value, text = method
+                        %option{:value => value} #{method}
             -else
                 %input{ :type => value[:type], :name => key, :step => 'any'}
     .submit
         %input{ :type => "submit", :name => "submit", :value => "submit" }
-
-
