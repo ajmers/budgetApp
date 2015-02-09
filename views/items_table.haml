@@ -1,0 +1,11 @@
+%table#items
+    %thead.columns
+        %tr
+        -@columns.each do |key, value|
+            %th{ :class => key} #{key.capitalize}
+    %tbody.data
+        -@items.each do |item|
+            %tr
+                -item.each do |key, value|
+                    -print = key == :amount ? '$' << value.to_f.to_s : value
+                    %td{:class => key} #{print}

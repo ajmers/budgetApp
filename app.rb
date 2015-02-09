@@ -34,17 +34,18 @@ items_set = Receipt.order(Sequel.asc(:item)).distinct(:item)
 
 receipts_set = Receipt.order(Sequel.desc(:date))
 
-categories_set = Item.order(Sequel.asc(:expense)).grep(:item, '1%').distinct(:expense).map(:expense)
-#categories_arr = db["select distinct items.expense from items join receipts on receipts.item = items.item where receipts.item like '1%' order by items.expense"].map(:expense)
+categories_set = Item.order(Sequel.asc(:category)).grep(:item, '1%').distinct(:category).map(:category)
+
+methods_set = Receipt.order(Sequel.asc(:method)).distinct(:method).select(:method).map(:method)
 
 income_sql = "select round(sum(amount), 2) as amount,
     to_char(date, 'YYYY-MM') as month
     from receipts join items
     on receipts.item = items.item
-    where items.expense = 'Primary income'
+    where items.category= 'Primary income'
         and date >= ?
         and funding='General'
-    group by items.expense, month
+    group by items.category, month
     order by month asc;"
 
 year_months_sql = "select distinct to_char(date, 'YYYY-MM') as year_month from receipts where to_char(date, 'YYYY-MM')>= ? order by year_month asc"
@@ -53,10 +54,10 @@ costs_sql = "select round(sum(amount), 2) as amount,
     to_char(date, 'YYYY-MM') as month
     from receipts join items
     on receipts.item = items.item
-    where items.expense = ?
+    where items.category = ?
         and date >= ?
         and funding = 'General'
-    group by items.expense, month, items.order
+    group by items.category, month, items.order
     order by items.order desc limit 12"
 
 subcategory_costs_sql = "select round(sum(amount), 2) as amount,
@@ -70,6 +71,8 @@ subcategory_costs_sql = "select round(sum(amount), 2) as amount,
 earliest_date = Receipt.select(:date).order(:date).first[:date]
 
 get '/receipts' do
+    @id = 'new_receipt'
+    @action = '/receipts/new'
     @columns = columns.dup
     @receipts= receipts_set.limit(100)
     @items = items_set.map(:item)
@@ -78,12 +81,13 @@ get '/receipts' do
 end
 
 get '/receipts/new' do
+    @id = 'new_receipt'
+    @action = '/receipts/new'
     @columns = columns.dup
     @items = items_set.map(:item)
 
     haml :new_receipt
 end
-
 
 
 post '/receipts/new' do
@@ -118,7 +122,20 @@ post '/receipts/new' do
     end
 end
 
+get '/methods' do
+    @methods = methods_set
 
+    haml :methods
+end
+
+
+get '/items' do
+    @columns = Item.columns
+    puts @columns
+
+    @items = Item.order(:item)
+    haml :items
+end
 
 route :get, :post, '/' do
     cost_series_array = []

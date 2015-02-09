@@ -1,0 +1,8 @@
+%table#items
+    %thead.columns
+        %tr
+            %th Payment methods
+    %tbody.data
+        -@methods.each do |method|
+            %tr
+                %td{:class => method} #{method}

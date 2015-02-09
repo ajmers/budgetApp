@@ -1,0 +1,9 @@
+%form#new_receipt{:method=> 'post', :action => '/items/new', :name => 'item'}
+    -@columns.each do |key, value|
+        .input
+            %label{ :for => key } #{key.capitalize}
+            %input{ :type => 'text', :name => key }
+    .submit
+        %input{ :type => "submit", :name => "submit", :value => "submit" }
+
+
