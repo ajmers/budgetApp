@@ -29,7 +29,7 @@ columns = {
    :tag=> {:type => 'text', :display => 'hide'}
 }
 
-items_set = Receipt.order(Sequel.asc(:item)).distinct(:item)
+items_set = Item.order(Sequel.asc(:item)).distinct(:item)
 #items_sql = "select distinct item from receipts order by item asc"
 
 receipts_set = Receipt.order(Sequel.desc(:date))
@@ -105,17 +105,10 @@ post '/receipts/new' do
     if not already_exists
         defaults.each do |key, value|
             sym = key.to_sym
-            puts sym
-            puts insert_params[sym].length
             if insert_params[sym].length == 0
-                puts defaults[sym]
                 insert_params[sym] = defaults[sym]
-            else
-                puts 'all necessary params present'
-                puts sym.to_s << '-' << defaults[sym]
             end
         end
-        puts insert_params
         new = Receipt.create(insert_params)
         redirect '/receipts'
     else
@@ -133,8 +126,6 @@ end
 
 get '/items' do
     @columns = Item.columns
-    puts @columns
-
     @items = Item.order(:item)
     haml :items
 end
@@ -143,14 +134,11 @@ route :get, :post, '/' do
     cost_series_array = []
     income_series_array = []
     drilldown_array = []
-    puts params
 
     if params[:date]
         @date = Date.strptime(params[:date], "%Y-%m")
-        puts @date
     else
         @date = get_one_year_ago()
-        puts @date
     end
 
     @all_year_months = db.fetch(year_months_sql, earliest_date).map(:year_month)
@@ -160,7 +148,6 @@ route :get, :post, '/' do
     @cats.each do |cat|
         cost_series = Hash.new
         data = db.fetch(costs_sql, cat, @date)#.map{|x| x[:amount].to_f}
-        puts data.all
         data_array = @year_months[0..11].dup
         cost_series_data = set_series_data(data, data_array)
 
@@ -173,11 +160,9 @@ route :get, :post, '/' do
     income_data = db.fetch(income_sql, @date)
     month_array = @year_months[0..11].dup
     income_data_array = set_series_data(income_data, month_array)
-    puts income_data_array
 
     @income_series = income_data_array
     @costs_series = cost_series_array.to_json
-    puts @costs_series
     haml :index
 end
 
