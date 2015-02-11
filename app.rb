@@ -79,6 +79,7 @@ get '/receipts' do
     @methods = methods_set
 
     haml :receipts
+    return receipts_set.to_json
 end
 
 get '/receipts/new' do
@@ -128,6 +129,8 @@ get '/items' do
     @columns = Item.columns
     @items = Item.order(:item)
     haml :items
+    puts @items
+    return @items.to_json
 end
 
 route :get, :post, '/' do
