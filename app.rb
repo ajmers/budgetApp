@@ -38,6 +38,11 @@ categories_set = Item.order(Sequel.asc(:category)).grep(:item, '1%').distinct(:c
 
 methods_set = Receipt.order(Sequel.asc(:method)).distinct(:method).select(:method).map(:method)
 
+year_months_sql = "select distinct to_char(date, 'YYYY-MM') as year_month
+    from receipts
+    where date >= ?
+    order by year_month asc"
+
 income_sql = "select round(sum(amount), 2) as amount,
     to_char(date, 'YYYY-MM') as month
     from receipts join items
@@ -47,8 +52,6 @@ income_sql = "select round(sum(amount), 2) as amount,
         and funding='General'
     group by items.category, month
     order by month asc;"
-
-year_months_sql = "select distinct to_char(date, 'YYYY-MM') as year_month from receipts where to_char(date, 'YYYY-MM')>= ? order by year_month asc"
 
 costs_sql = "select round(sum(amount), 2) as amount,
     to_char(date, 'YYYY-MM') as month
@@ -70,6 +73,11 @@ subcategory_costs_sql = "select round(sum(amount), 2) as amount,
 
 earliest_date = Receipt.select(:date).order(:date).first[:date]
 
+get '/receipts/:id' do
+    receipt = Receipt[:id]
+    return receipt.to_json
+end
+
 get '/receipts' do
     @id = 'new_receipt'
     @action = '/receipts/new'
@@ -79,7 +87,6 @@ get '/receipts' do
     @methods = methods_set
 
     haml :receipts
-    return receipts_set.to_json
 end
 
 get '/receipts/new' do
@@ -139,9 +146,12 @@ route :get, :post, '/' do
     drilldown_array = []
 
     if params[:date]
+        puts params[:date]
         @date = Date.strptime(params[:date], "%Y-%m")
+        puts @date
     else
         @date = get_one_year_ago()
+        puts @date
     end
 
     @all_year_months = db.fetch(year_months_sql, earliest_date).map(:year_month)

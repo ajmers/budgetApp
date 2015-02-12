@@ -19,7 +19,7 @@ form#new_receipt .input { display: block; padding: 10px; }
 #content table td.hide {display: none;}
 #content table th.hide {display: none;}
 #content table td.amount {text-align: right;}
-td.description, td.funding, td.expense, td.envelope, td.roommate, td.notes, td.tag {display: none;}
+td.description, td.funding, td.expense, td.envelope, td.roommate, td.notes, td.tag, td.id {display: none;}
 td.date, th.date { width: 15%}
 td.method { width: 16%;}
 #content table tbody tr:hover {background-color: lightblue;}
