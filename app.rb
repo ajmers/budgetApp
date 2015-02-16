@@ -11,6 +11,11 @@ db = Sequel.connect('postgres://localhost/budget')
 
 class Item < Sequel::Model; end
 class Receipt < Sequel::Model; end
+class Sequel::Dataset
+    def to_json
+        naked.all.to_json
+    end
+end
 
 defaults = {:funding => 'General', :expense => 'Personal' }
 
@@ -73,10 +78,6 @@ subcategory_costs_sql = "select round(sum(amount), 2) as amount,
 
 earliest_date = Receipt.select(:date).order(:date).first[:date]
 
-get '/receipts/:id' do
-    receipt = Receipt[:id]
-    return receipt.to_json
-end
 
 get '/receipts' do
     @id = 'new_receipt'
@@ -100,44 +101,12 @@ get '/receipts/new' do
 end
 
 
-post '/receipts/new' do
-    insert_params = {}
-
-    Receipt.columns.each do |column|
-        if params[column]
-            insert_params[column] = params[column]
-        end
-    end
-
-    already_exists = check_for_duplicates(insert_params)
-    if not already_exists
-        defaults.each do |key, value|
-            sym = key.to_sym
-            if insert_params[sym].length == 0
-                insert_params[sym] = defaults[sym]
-            end
-        end
-        new = Receipt.create(insert_params)
-        redirect '/receipts'
-    else
-        puts 'already exists in db'
-        redirect '/receipts'
-    end
-end
-
-get '/methods' do
-    @methods = methods_set
-
-    haml :methods
-end
-
-
 get '/items' do
-    @columns = Item.columns
-    @items = Item.order(:item)
     haml :items
-    puts @items
-    return @items.to_json
+end
+
+get '/items/new' do
+    haml :form
 end
 
 route :get, :post, '/' do
@@ -178,6 +147,82 @@ route :get, :post, '/' do
     @costs_series = cost_series_array.to_json
     haml :index
 end
+
+
+# API routes
+
+get '/api/receipts/:id' do
+    receipt = Receipt[:id]
+    return receipt.values.to_json
+end
+
+delete '/api/receipts/:id' do
+    puts params[:id]
+    receipt = Receipt[:id]
+    puts receipt
+    receipt.delete
+end
+
+
+get '/api/receipts' do
+    @receipts= receipts_set.limit(500)
+
+    return @receipts.to_json
+end
+
+get '/api/receipts/new' do
+    @id = 'new_receipt'
+    @action = '/receipts/new'
+    @columns = columns.dup
+    @items = items_set.map(:item)
+    @methods = methods_set
+
+    haml :new_receipt
+end
+
+
+post '/api/receipts' do
+    insert_params = {}
+
+    Receipt.columns.each do |column|
+        if params[column]
+            insert_params[column] = params[column]
+        end
+    end
+
+    already_exists = check_for_duplicates(insert_params)
+    if not already_exists
+        defaults.each do |key, value|
+            sym = key.to_sym
+            if insert_params[sym].length == 0
+                insert_params[sym] = defaults[sym]
+            end
+        end
+        new = Receipt.create(insert_params)
+        redirect '/receipts'
+    else
+        puts 'already exists in db'
+        redirect '/receipts'
+    end
+end
+
+get '/api/methods' do
+    @methods = methods_set
+    return @methods.to_json
+end
+
+get '/api/items' do
+    @items = Item.order(:item)
+    return @items.to_json
+end
+
+get '/api/items/:id' do
+    @item = Item[:id]
+    return @item.values.to_json
+end
+
+
+
 
 
 

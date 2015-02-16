@@ -8,9 +8,9 @@ html * { font-family: Raleway;}
 #sidebar a:hover { color: lightblue; }
 
 /* Forms */
-form#new_receipt { background-color: lightblue; top: 0px; position: fixed; width: 260px; margin: 0 auto; right: 0; margin-top: 20px; margin-right: 20px;}
-form#new_receipt input, form#new_receipt select { float: right; }
-form#new_receipt .input { display: block; padding: 10px; }
+form#new { background-color: lightblue; top: 0px; position: fixed; width: 260px; margin: 0 auto; right: 0; margin-top: 20px; margin-right: 20px;}
+form#new input, form#new select { float: right; }
+form#new .input { display: block; padding: 10px; }
 
 /* Table */
 #content table { width: 809px; margin-top: 25px; display: inline-block;}
@@ -23,6 +23,6 @@ td.description, td.funding, td.expense, td.envelope, td.roommate, td.notes, td.t
 td.date, th.date { width: 15%}
 td.method { width: 16%;}
 #content table tbody tr:hover {background-color: lightblue;}
-
+#content table tbody td.delete {width:16px; background: url('/delete_16x16.gif') no-repeat;}
 
 

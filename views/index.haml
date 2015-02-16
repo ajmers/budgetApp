@@ -1,10 +1,4 @@
 %form{:method => 'post'}
-    %select{:action => '/', :name => "date"}
-        -@all_year_months.each do |y_m|
-            =value, text = y_m
-            %option{:value => value} #{y_m}
-
-    %input{ :type => "submit", :name => "submit", :value => "submit" }
 
 #chart{ :style => "width: 700px; height:500px; margin:0 auto;" }
 
