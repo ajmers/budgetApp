@@ -4,16 +4,29 @@ $(function(){
 
     window.Receipt = Backbone.Model.extend({
         idAttribute: "id",
-        defaults: function() {
-            return {
-                funding: 'General',
-                expense: 'Personal'
-            };
+        defaults:  {
+            funding: 'General',
+            expense: 'Personal'
         },
     });
 
     window.ReceiptList = Backbone.Collection.extend({
         model: Receipt,
+        pageNumber:0,
+
+        fetchNewItems: function () {
+            this.pageNumber++;
+            this.fetch({data: {page: this.pageNumber}});
+        },
+        fetchOnScroll: function(ev) {
+            if ((window.innerHeight + window.scrollY) >=
+                    document.body.offsetHeight) {
+                this.fetchNewItems();
+            }
+        },
+        comparator: function(m) {
+            return -(new Date(m.get('date')));
+        },
 
         url: '/api/receipts',
 
@@ -32,6 +45,10 @@ $(function(){
             this.model.bind('change', this.render, this);
             this.model.bind('destroy', this.remove, this);
         },
+        events: {
+            "click td.delete" : "clear",
+        },
+
 
 
         render: function() {
@@ -70,23 +87,31 @@ $(function(){
         initialize: function() {
             Receipts.bind('add', this.addOne, this);
             Receipts.bind('all', this.render, this);
-            Receipts.fetch();
+            $(window).bind('scroll', function(ev) {
+                Receipts.fetchOnScroll(ev)
+            })
+            Receipts.fetchNewItems();
         },
 
         events: {
-        //    "click td.delete" : "clear"
-            "submit form#new" : "createReceipt"
+            "submit form#new" : "createReceipt",
         },
+
 
         createReceipt: function(ev) {
             ev.preventDefault();
             var data = {};
             for (var i = 0, len = ev.target.length; i < len; i++) {
-                data[ev.target[i].name] = ev.target[i].value;
+                var field = ev.target[i];
+                if (field.value) {
+                    data[field.name] = field.value;
+                }
             }
             Receipts.create(data);
+            ev.target.reset();
             return false;
         },
+
 
         addOne: function(receipt) {
             var view = new ReceiptView({model: receipt});

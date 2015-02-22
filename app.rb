@@ -8,6 +8,7 @@ require 'sinatra/contrib'
 set :haml, :format => :html5
 
 db = Sequel.connect('postgres://localhost/budget')
+db.extension(:pagination)
 
 class Item < Sequel::Model; end
 class Receipt < Sequel::Model; end
@@ -157,17 +158,25 @@ get '/api/receipts/:id' do
 end
 
 delete '/api/receipts/:id' do
-    puts params[:id]
-    receipt = Receipt[:id]
-    puts receipt
-    receipt.delete
+    receipt = Receipt[params[:id]]
+    if receipt
+        receipt.delete
+    end
 end
 
 
 get '/api/receipts' do
-    @receipts= receipts_set.limit(500)
+    page = Integer(params[:page]) rescue 1
+    puts page
+
+    @receipts= receipts_set.paginate(page, 50)
 
     return @receipts.to_json
+end
+
+def get_page_range(page)
+    at_a_time = 50
+    return page * at_a_time
 end
 
 get '/api/receipts/new' do
@@ -183,22 +192,14 @@ end
 
 post '/api/receipts' do
     insert_params = {}
+    request_payload = JSON.parse request.body.read
+    puts request_payload
+    request_payload.delete('submit')
 
-    Receipt.columns.each do |column|
-        if params[column]
-            insert_params[column] = params[column]
-        end
-    end
-
-    already_exists = check_for_duplicates(insert_params)
+    already_exists = check_for_duplicates(request_payload)
     if not already_exists
-        defaults.each do |key, value|
-            sym = key.to_sym
-            if insert_params[sym].length == 0
-                insert_params[sym] = defaults[sym]
-            end
-        end
-        new = Receipt.create(insert_params)
+        new = Receipt.create(request_payload)
+        puts new
         redirect '/receipts'
     else
         puts 'already exists in db'
@@ -243,7 +244,7 @@ end
 
 
 def get_one_year_ago
-    return Date.strptime((Date.today.year - 1).to_s << '-' << Date.today.month.to_s, '%Y-%m')
+    return Date.strptime((Date.today.year - 1).to_s << '-' << (Date.today.month + 1).to_s, '%Y-%m')
 end
 
 def check_for_duplicates(data)
@@ -251,6 +252,6 @@ def check_for_duplicates(data)
     #    puts x
     #end
     existing = Receipt.where(:date => data[:date], :amount => data[:amount], :item => data[:item])
-    #puts existing.all.length
+    puts existing.all.length
     return (existing.all.length > 0)
 end
