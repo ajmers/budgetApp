@@ -19,10 +19,12 @@ form#new .input { display: block; padding: 10px; }
 #content table td.hide {display: none;}
 #content table th.hide {display: none;}
 #content table td.amount {text-align: right;}
+#content table td.amount span.filter {display: none;}
+#content table td span.filter.show-filter {position: absolute; width: 16px; height: 16px; background: url('/filter.png') no-repeat;margin-right: 0px;}
 td.description, td.funding, td.expense, td.envelope, td.roommate, td.notes, td.tag, td.id {display: none;}
 td.date, th.date { width: 15%}
 td.method { width: 16%;}
 #content table tbody tr:hover {background-color: lightblue;}
-#content table tbody td.delete {width:16px; background: url('/delete_16x16.gif') no-repeat;}
+#content table tbody td.delete {width:16px; height: 16px; background: url('/delete_16x16.gif') no-repeat;}
 
 

@@ -24,6 +24,21 @@ $(function(){
                 this.fetchNewItems();
             }
         },
+        attrFilter: function(attr, value) {
+            filtered = this.filter(function(receipt) {
+                return receipt.get(attr) === value;
+            });
+            filteredReceipts = new ReceiptList(filtered);
+
+            $('table#items tbody.data').empty();
+            filteredReceipts.each(function(receipt) {
+                var filteredView = new ReceiptView({
+                    model: receipt
+                });
+                this.$('table#items tbody.data').append(filteredView.render().el);
+            });
+        },
+
         comparator: function(m) {
             return -(new Date(m.get('date')));
         },
@@ -47,9 +62,23 @@ $(function(){
         },
         events: {
             "click td.delete" : "clear",
+            "mouseenter td" : "showFilter",
+            "mouseleave td" : "hideFilter",
+            "click .filter" : "filter"
         },
 
+        showFilter: function(ev) {
+            $('span.filter', ev.target).addClass('show-filter');
+        },
+        hideFilter: function(ev) {
+            $('span.filter', ev.target).removeClass('show-filter');
+        },
 
+        filter: function(ev) {
+            var text = $.trim(ev.target.parentNode.textContent);
+            var colName = ev.target.parentNode.className;
+            Receipts.attrFilter(colName, text);
+        },
 
         render: function() {
             $(this.el).html(this.template(this.model.toJSON()));
@@ -63,24 +92,25 @@ $(function(){
 
 
         setText: function() {
-            this.$('td.date').text(this.model.get('date'));
-            this.$('td.amount').text(parseFloat(this.model.get('amount')));
-            this.$('td.name').text(this.model.get('name'));
-            this.$('td.description').text(this.model.get('description'));
-            this.$('td.item').text(this.model.get('item'));
-            this.$('td.method').text(this.model.get('method'));
-            this.$('td.funding').text(this.model.get('funding'));
-            this.$('td.expense').text(this.model.get('expense'));
-            this.$('td.envelope').text(this.model.get('envelope'));
-            this.$('td.roommate').text(this.model.get('roommate'));
-            this.$('td.notes').text(this.model.get('notes'));
-            this.$('td.tag').text(this.model.get('tag'));
+            this.$('td.date').prepend(this.model.get('date'));
+            this.$('td.amount').prepend(parseFloat(this.model.get('amount')));
+            this.$('td.name').prepend(this.model.get('name'));
+            this.$('td.description').prepend(this.model.get('description'));
+            this.$('td.item').prepend(this.model.get('item'));
+            this.$('td.method').prepend(this.model.get('method'));
+            this.$('td.funding').prepend(this.model.get('funding'));
+            this.$('td.expense').prepend(this.model.get('expense'));
+            this.$('td.envelope').prepend(this.model.get('envelope'));
+            this.$('td.roommate').prepend(this.model.get('roommate'));
+            this.$('td.notes').prepend(this.model.get('notes'));
+            this.$('td.tag').prepend(this.model.get('tag'));
         },
 
         clear: function() {
             this.model.destroy();
         }
     });
+
 
     window.AppView = Backbone.View.extend({
         el: $('#budgetApp'),
