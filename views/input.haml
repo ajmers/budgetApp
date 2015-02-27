@@ -2,7 +2,9 @@
     %select{:action => '/', :name => "date"}
         -@year_months.each do |y_m|
             =value, text = y_m
-            %option{:value => value} #{y_m}
+            =selected = y_m === @date ? 'selected' : ''
+            -puts selected
+            %option{:value => value, :selected => selected} #{y_m}
 
     %input{ :type => "submit", :name => "submit", :value => "submit" }
 

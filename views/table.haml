@@ -1,0 +1,17 @@
+%table#items
+    %thead.columns
+        %tr
+            //%th.delete
+            -@columns.each do |key, value|
+                -if value[:display]=='show'
+                    %th{ :class => key} #{key.capitalize}
+    %tbody.new
+    %tbody.data
+
+%script#row-template{"type" => "text/template"}
+    // %td.delete
+    -@columns.each do |key, value|
+        -if value[:display]=='show'
+            %td{ :class => key}
+                %span.filter
+

@@ -13,4 +13,10 @@
                 %a{ :href=> '/methods', :title => 'Payment Methods'} Payment Methods
 
         #content
-            =yield
+            #budgetApp
+                =yield
+
+        / scripts concatenated and minified via ant build script
+        %script{'src' => '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js'}
+        %script{'src' => '//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js'}
+        /%script{'defer' => true, 'src' => 'scripts/plugins.js'}

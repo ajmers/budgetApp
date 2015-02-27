@@ -10,3 +10,4 @@
                 -column.each do |key, value|
                     -print = key == :amount ? '$' << value.to_f.to_s : value
                     %td{:class => key} #{print}
+                        %span.filter
