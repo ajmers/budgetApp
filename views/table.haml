@@ -1,16 +1,17 @@
 %table#items
     %thead.columns
         %tr
-            %th.delete
+            //%th.delete
             -@columns.each do |key, value|
                 -if value[:display]=='show'
                     %th{ :class => key} #{key.capitalize}
+    %tbody.new
     %tbody.data
 
-/ Can't figure out how to tell HAML not to escape the raw HTML lines
-%script#receipt-template{"type" => "text/template"}
-    %td.delete
+%script#row-template{"type" => "text/template"}
+    // %td.delete
     -@columns.each do |key, value|
         -if value[:display]=='show'
             %td{ :class => key}
                 %span.filter
+

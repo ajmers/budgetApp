@@ -20,7 +20,7 @@ end
 
 defaults = {:funding => 'General', :expense => 'Personal' }
 
-columns = {
+receipt_columns = {
    :date=> {:type => 'date', :display => 'show'},
    :amount=> {:type => 'number', :display => 'show'},
    :name=> {:type => 'text', :display => 'show'},
@@ -35,12 +35,20 @@ columns = {
    :tag=> {:type => 'text', :display => 'hide'}
 }
 
+item_columns = {
+    :item => {:type => 'text', :display => 'show'},
+    :category => {:type => 'text', :display => 'show'},
+    :recurring => {:type => 'text', :display => 'show'},
+    :order => {:type => 'text', :display => 'show'},
+}
+
 items_set = Item.order(Sequel.asc(:item)).distinct(:item)
 #items_sql = "select distinct item from receipts order by item asc"
 
 receipts_set = Receipt.order(Sequel.desc(:date))
 
-categories_set = Item.order(Sequel.asc(:category)).grep(:item, '1%').distinct(:category).map(:category)
+categories_set = Item.grep(:item, '1%').order(Sequel.desc(:order))
+categories_ordered = categories_set.distinct(:category, :order).map(:category)
 
 methods_set = Receipt.order(Sequel.asc(:method)).distinct(:method).select(:method).map(:method)
 
@@ -83,7 +91,7 @@ earliest_date = Receipt.select(:date).order(:date).first[:date]
 get '/receipts' do
     @id = 'new_receipt'
     @action = '/receipts/new'
-    @columns = columns.dup
+    @columns = receipt_columns.dup
     @receipts= receipts_set.limit(100)
     @items = items_set.map(:item)
     @methods = methods_set
@@ -94,7 +102,7 @@ end
 get '/receipts/new' do
     @id = 'new_receipt'
     @action = '/receipts/new'
-    @columns = columns.dup
+    @columns = receipt_columns.dup
     @items = items_set.map(:item)
     @methods = methods_set
 
@@ -103,10 +111,16 @@ end
 
 
 get '/items' do
+    @columns = item_columns.dup
+    @items = items_set.map(:item)
+    @action = '/items/new'
     haml :items
 end
 
 get '/items/new' do
+    @columns = item_columns.dup
+    @items = items_set.map(:item)
+    @action = '/items/new'
     haml :form
 end
 
@@ -126,7 +140,7 @@ route :get, :post, '/' do
 
     @all_year_months = db.fetch(year_months_sql, earliest_date).map(:year_month)
     @year_months = db.fetch(year_months_sql, @date).map(:year_month)
-    @cats = categories_set
+    @cats = categories_ordered
 
     @cats.each do |cat|
         cost_series = Hash.new
@@ -195,6 +209,7 @@ post '/api/receipts' do
     request_payload = JSON.parse request.body.read
     puts request_payload
     request_payload.delete('submit')
+    request_payload.delete('new')
 
     already_exists = check_for_duplicates(request_payload)
     if not already_exists

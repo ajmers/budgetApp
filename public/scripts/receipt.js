@@ -6,8 +6,12 @@ $(function(){
         idAttribute: "id",
         defaults:  {
             funding: 'General',
-            expense: 'Personal'
+            expense: 'Personal',
         },
+    });
+
+    window.Item = Backbone.Model.extend({
+        idAttribute: "item",
     });
 
     window.ReceiptList = Backbone.Collection.extend({
@@ -55,7 +59,7 @@ $(function(){
 
     window.ReceiptView = Backbone.View.extend({
         tagName: 'tr',
-        template: _.template($('#receipt-template').html()),
+        template: _.template($('#row-template').html()),
         initialize: function() {
             this.model.bind('change', this.render, this);
             this.model.bind('destroy', this.remove, this);
@@ -63,8 +67,8 @@ $(function(){
         events: {
             "click td.delete" : "clear",
             "mouseenter td" : "showFilter",
-            "mouseleave td" : "hideFilter",
-            "click .filter" : "filter"
+            "mouseleave td" : "hideFilter"
+        //    "click .filter" : "filter"
         },
 
         showFilter: function(ev) {
@@ -137,16 +141,22 @@ $(function(){
                     data[field.name] = field.value;
                 }
             }
+            data.new = true;
             Receipts.create(data);
             ev.target.reset();
+            this.$('input[name="date"]').focus();
             return false;
         },
 
-
         addOne: function(receipt) {
             var view = new ReceiptView({model: receipt});
-            this.$('table#items tbody.data').append(view.render().el);
+            if (receipt.get('new')) {
+                this.$('table#items tbody.new').append(view.render().el);
+            } else {
+                this.$('table#items tbody.data').append(view.render().el);
+            }
         },
+
         addAll: function() {
             Receipts.each(this.addOne);
         }

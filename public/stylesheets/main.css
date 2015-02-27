@@ -1,8 +1,8 @@
 /* Layout */
 html * { font-family: Raleway;}
 
-#content { position: relative; padding-left: 315px; display: inline-block; }
-#sidebar { position: fixed; background-color: darkorange; width: 300px; display: inline-block; height: 100%; margin-top: 20px; top: 0px; z-index: 1;}
+#content { margin-top: 20px; position: relative; padding-left: 240px; display: inline-block; }
+#sidebar { position: fixed; background-color: darkorange; width: 231px; display: inline-block; height: 100%; margin-top: 20px; top: 0px; z-index: 1;}
 #sidebar .menu { z-index: 28; position: relative; padding-top: 200px; }
 #sidebar .menu a { display: block; font-size: 22px; text-decoration: none; padding-top: 10px; color: white; padding-left: 15px; }
 #sidebar a:hover { color: lightblue; }
@@ -15,6 +15,7 @@ form#new .input { display: block; padding: 10px; }
 /* Table */
 #content table { width: 809px; margin-top: 25px; display: inline-block;}
 #content table thead tr th { font-weight: bold; padding-bottom: 10px; text-align: left; }
+#content table tbody.new {background-color: lightyellow; }
 #content table td { padding-right: 10px}
 #content table td.hide {display: none;}
 #content table th.hide {display: none;}

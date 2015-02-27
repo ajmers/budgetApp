@@ -1,0 +1,7 @@
+%form#new
+    -@columns.each do |key, value|
+        .input
+            %label{ :for => key } #{key.capitalize}
+            %input{ :type => value[:type], :name => key, :step => 'any'}
+    .submit
+        %input{ :type => "submit", :name => "submit", :value => "submit" }

@@ -1,8 +1,19 @@
-%form{:method => 'post'}
+%form#dateform{:method => 'post', :action => '/', :method => 'post'}
+    %input#date{:type => 'date', :name => 'date'}
 
 #chart{ :style => "width: 700px; height:500px; margin:0 auto;" }
 
 :javascript
+    (function bindEnter() {
+        var form = document.getElementById('dateform');
+        var input = document.getElementById('date');
+        input.onkeyup  = function(e) {
+            var key = e.keyCode ? e.keyCode : e.which;
+            if (key == 13) {
+                form.submit();
+            }
+        };
+    })();
 
     var chart = new Highcharts.Chart({
         chart: {
