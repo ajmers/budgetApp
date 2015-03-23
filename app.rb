@@ -1,4 +1,5 @@
 require 'haml'
+require 'logger'
 require 'sinatra'
 require 'sequel'
 require 'sinatra/js'
@@ -9,7 +10,7 @@ set :haml, :format => :html5
 
 db = Sequel.connect('postgres://localhost/budget')
 db.extension(:pagination)
-
+db.loggers << Logger.new($stdout)
 class Item < Sequel::Model; end
 class Receipt < Sequel::Model; end
 class Sequel::Dataset
@@ -47,8 +48,9 @@ items_set = Item.order(Sequel.asc(:item)).distinct(:item)
 
 receipts_set = Receipt.order(Sequel.desc(:date))
 
-categories_set = Item.grep(:item, '1%').order(Sequel.desc(:order))
-categories_ordered = categories_set.distinct(:category, :order).map(:category)
+categories_set = Item.distinct(:category, :order).grep(:item, '1%').order(Sequel.desc(:order)).map(:category)
+
+income_cats_set = Item.distinct(:category, :order).grep(:item, '2%').order(Sequel.desc(:order)).map(:category)
 
 methods_set = Receipt.order(Sequel.asc(:method)).distinct(:method).select(:method).map(:method)
 
@@ -61,7 +63,7 @@ income_sql = "select round(sum(amount), 2) as amount,
     to_char(date, 'YYYY-MM') as month
     from receipts join items
     on receipts.item = items.item
-    where items.category= 'Primary income'
+    where items.category = 'Primary income'
         and date >= ?
         and funding='General'
     group by items.category, month
@@ -126,7 +128,6 @@ end
 
 route :get, :post, '/' do
     cost_series_array = []
-    income_series_array = []
     drilldown_array = []
 
     if params[:date]
@@ -140,25 +141,22 @@ route :get, :post, '/' do
 
     @all_year_months = db.fetch(year_months_sql, earliest_date).map(:year_month)
     @year_months = db.fetch(year_months_sql, @date).map(:year_month)
-    @cats = categories_ordered
+    @cats = categories_set
 
     @cats.each do |cat|
         cost_series = Hash.new
         data = db.fetch(costs_sql, cat, @date)#.map{|x| x[:amount].to_f}
+        puts data.all
         data_array = @year_months[0..11].dup
         cost_series_data = set_series_data(data, data_array)
 
         cost_series['name'] = cat
         cost_series['data'] = cost_series_data
+        cost_series['stack'] = 'cost'
         #cost_series['drilldown'] = cat
         cost_series_array.push(cost_series)
     end
 
-    income_data = db.fetch(income_sql, @date)
-    month_array = @year_months[0..11].dup
-    income_data_array = set_series_data(income_data, month_array)
-
-    @income_series = income_data_array
     @costs_series = cost_series_array.to_json
     haml :index
 end
@@ -178,20 +176,56 @@ delete '/api/receipts/:id' do
     end
 end
 
+get '/api/income/:date' do
+    if params[:date]
+        date = Date.strptime(params[:date], "%Y-%m")
+        puts date
+    else
+        date = get_one_year_ago()
+    end
+
+    @year_months = db.fetch(year_months_sql, date).map(:year_month)
+    puts @year_months
+
+    income_series = Hash.new
+    data = db.fetch(income_sql, date)#.map{|x| x[:amount].to_f}
+    puts data.all
+    data_array = @year_months[0..11].dup
+    puts data_array
+    income_series_data = set_series_data(data, data_array)
+    puts income_series_data
+
+    income_series['name'] = 'Primary income'
+    income_series['data'] = income_series_data
+    income_series['stack'] = 'income'
+    #cost_series['drilldown'] = cat
+
+    return income_series.to_json
+end
+
 
 get '/api/receipts' do
-    page = Integer(params[:page]) rescue 1
+    allowed_filters = ["item", "method", "name"]
+
+    page = params[:page].blank?? 1 : Integer(params[:page])
     puts page
+    filters = params[:filters].blank?? Hash.new : params[:filters].select { |i| allowed_filters.include?(i) }
+    filters = Hash[filters.map{|(k,v)| [k.to_sym,v]}]
+    puts filters
+    results = receipts_set.paginate(page, 50)
 
-    @receipts= receipts_set.paginate(page, 50)
+    filters.each do |key, value|
+        results = results.where("#{key} = ?", value)
+    end
 
-    return @receipts.to_json
+    return results.to_json
 end
 
 def get_page_range(page)
     at_a_time = 50
     return page * at_a_time
 end
+
 
 get '/api/receipts/new' do
     @id = 'new_receipt'
@@ -238,10 +272,6 @@ get '/api/items/:id' do
 end
 
 
-
-
-
-
 def set_series_data(data, data_array)
     data.each do |x|
         index = data_array.index(x[:month])
@@ -254,6 +284,7 @@ def set_series_data(data, data_array)
             end
         end
     end
+    puts data_array
     return data_array
 end
 

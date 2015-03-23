@@ -1,7 +1,11 @@
 %form#dateform{:method => 'post', :action => '/', :method => 'post'}
     %input#date{:type => 'date', :name => 'date'}
+#choices
+    %a.choice.right.spending Spending
+    %a.choice.left.combined Combined
 
-#chart{ :style => "width: 700px; height:500px; margin:0 auto;" }
+#spendingChart{ :style => "width: 700px; height:500px; margin:0 auto;" }
+#combinedChart{ :style => "display: none; width: 700px; height:500px; margin:0 auto;" }
 
 :javascript
     (function bindEnter() {
@@ -15,9 +19,9 @@
         };
     })();
 
-    var chart = new Highcharts.Chart({
+    var spendingChart = new Highcharts.Chart({
         chart: {
-            renderTo: 'chart',
+            renderTo: 'spendingChart',
             type: 'column'
         },
         title: {
@@ -42,3 +46,54 @@
         },
         series: #{@costs_series},
     });
+
+    (function bindClicks() {
+        var chart = $('#spendingChart').highcharts();
+        var incomeSeries;
+        $('a.choice.spending').click(function() {
+            $('#combinedChart').hide();
+            $('#spendingChart').show();
+        });
+        $('a.choice.combined').click(function() {
+            function getIncome() {
+                return $.ajax('/api/income/#{@date}');
+            }
+
+            if (!incomeSeries) {
+                getIncome().done(function(data) {
+                    var chartData = $.parseJSON(data);
+
+                    chartData.type = 'line';
+
+                    incomeSeries = chart.addSeries(chartData);
+                });
+            }
+        });
+    })();
+    //var combinedChart = new Highcharts.Chart({
+    //    chart: {
+    //        renderTo: 'combinedChart',
+    //        type: 'column'
+    //    },
+    //    title: {
+    //        text: 'Combined'
+    //    },
+    //    xAxis: {
+    //        categories: #{@year_months}
+    //    },
+    //    yAxis: {
+    //        min: 0,
+    //        labels: {
+    //            enabled: false
+    //        },
+    //        title: {
+    //            text: 'amount $'
+    //        }
+    //    },
+    //    plotOptions: {
+    //        series: {
+    //            stacking: 'none'
+    //        }
+    //    },
+    //    series: chartData
+    //});

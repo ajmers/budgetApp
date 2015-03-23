@@ -1,7 +1,5 @@
 $(function(){
 
-    //Receipt model - has date, amount, name, description, item, method, funding, expense, envelope, roommate, notes, tag and id columsn.
-
     window.Item = Backbone.Model.extend({
         idAttribute: "name"
     });

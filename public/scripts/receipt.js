@@ -10,17 +10,20 @@ $(function(){
         },
     });
 
-    window.Item = Backbone.Model.extend({
-        idAttribute: "item",
+    window.Filter = Backbone.Model.extend({
+        idAttribute: "id"
     });
 
     window.ReceiptList = Backbone.Collection.extend({
         model: Receipt,
-        pageNumber:0,
+        pageNumber:1,
 
         fetchNewItems: function () {
-            this.pageNumber++;
-            this.fetch({data: {page: this.pageNumber}});
+            if (Receipts.models.length >= 50) {
+                this.pageNumber++;
+            }
+            this.fetch({data: {page: this.pageNumber,
+                                filters: this.filters}});
         },
         fetchOnScroll: function(ev) {
             if ((window.innerHeight + window.scrollY) >=
@@ -28,34 +31,60 @@ $(function(){
                 this.fetchNewItems();
             }
         },
+        filters: {},
         attrFilter: function(attr, value) {
             filtered = this.filter(function(receipt) {
                 return receipt.get(attr) === value;
             });
-            filteredReceipts = new ReceiptList(filtered);
 
             $('table#items tbody.data').empty();
-            filteredReceipts.each(function(receipt) {
-                var filteredView = new ReceiptView({
-                    model: receipt
-                });
-                this.$('table#items tbody.data').append(filteredView.render().el);
-            });
+            Receipts.reset();
+            Receipts.add(filtered);
+            if (!Receipts.filters[attr] || this.filters[attr] != value) {
+                this.filters[attr] = value;
+            }
         },
-
         comparator: function(m) {
             return -(new Date(m.get('date')));
         },
 
-        url: '/api/receipts',
-
-        funding: function() {
-            return this.filter(function(receipt) {return receipt.get('funding');});
-        }
+        url: '/api/receipts'
     });
 
 
     window.Receipts = new ReceiptList;
+
+    window.FilterView = Backbone.View.extend({
+        tagName: 'div',
+        template: _.template($('#filter-template').html()),
+        initialize: function() {
+            this.model.bind('change', this.render, this);
+            this.model.bind('destroy', this.remove, this);
+        },
+        render: function() {
+            $(this.el).html(this.template(this.model.toJSON));
+            this.setText();
+            return this;
+        },
+        events: {
+            "click span.delete" : "clear"
+        },
+
+        remove: function() {
+            $(this.el).remove();
+        },
+
+        clear: function() {
+            delete Receipts.filters[this.model.get('name')];
+            this.model.destroy();
+            Receipts.fetchNewItems();
+        },
+
+        setText: function() {
+            this.$('div.name span.name').html(this.model.get('name'));
+            this.$('div.value').html(this.model.get('value'));
+        },
+    });
 
     window.ReceiptView = Backbone.View.extend({
         tagName: 'tr',
@@ -67,8 +96,8 @@ $(function(){
         events: {
             "click td.delete" : "clear",
             "mouseenter td" : "showFilter",
-            "mouseleave td" : "hideFilter"
-        //    "click .filter" : "filter"
+            "mouseleave td" : "hideFilter",
+            "click .filter" : "filter"
         },
 
         showFilter: function(ev) {
@@ -81,7 +110,9 @@ $(function(){
         filter: function(ev) {
             var text = $.trim(ev.target.parentNode.textContent);
             var colName = ev.target.parentNode.className;
+            var filter = new window.Filter({name: colName, value: text});
             Receipts.attrFilter(colName, text);
+            App.addFilter(filter);
         },
 
         render: function() {
@@ -93,7 +124,6 @@ $(function(){
         remove: function() {
             $(this.el).remove();
         },
-
 
         setText: function() {
             this.$('td.date').prepend(this.model.get('date'));
@@ -122,15 +152,19 @@ $(function(){
             Receipts.bind('add', this.addOne, this);
             Receipts.bind('all', this.render, this);
             $(window).bind('scroll', function(ev) {
-                Receipts.fetchOnScroll(ev)
-            })
+                Receipts.fetchOnScroll(ev);
+            });
             Receipts.fetchNewItems();
         },
 
         events: {
             "submit form#new" : "createReceipt",
+            "click a#load-more-button" : "fetchNewItems"
         },
 
+        fetchNewItems: function(ev) {
+            Receipts.fetchNewItems();
+        },
 
         createReceipt: function(ev) {
             ev.preventDefault();
@@ -146,6 +180,11 @@ $(function(){
             ev.target.reset();
             this.$('input[name="date"]').focus();
             return false;
+        },
+
+        addFilter: function(filter) {
+            var view = new FilterView({model: filter});
+            this.$('div#filters').append(view.render().el);
         },
 
         addOne: function(receipt) {

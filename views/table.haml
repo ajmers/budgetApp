@@ -1,3 +1,5 @@
+%div#filters
+
 %table#items
     %thead.columns
         %tr
@@ -8,10 +10,20 @@
     %tbody.new
     %tbody.data
 
+%a#load-more-button Load More
+
 %script#row-template{"type" => "text/template"}
     // %td.delete
     -@columns.each do |key, value|
         -if value[:display]=='show'
             %td{ :class => key}
                 %span.filter
+
+%script#filter-template{"type" => "text/template"}
+    %div.filter
+        %div.name
+            %span.delete X
+            %span.name
+        %div.value
+
 
