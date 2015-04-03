@@ -69,12 +69,18 @@ $(function(){
             Items.bind('add', this.addOne, this);
             Items.bind('all', this.render, this);
             Items.fetchNewItems();
+            this.rollUpForm();
         },
 
         events: {
             "submit form#new" : "createItem",
+            "click #form-container .collapse" : "rollUpForm"
         },
 
+        rollUpForm: function(ev) {
+            var form = this.$('form#new');
+            form.animate({'height': 'toggle'}, 200);
+        },
 
         createItem: function(ev) {
             ev.preventDefault();

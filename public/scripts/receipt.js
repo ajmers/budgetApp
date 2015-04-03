@@ -218,7 +218,8 @@ $(function(){
             $(window).bind('scroll', function(ev) {
                 Receipts.fetchOnScroll(ev);
             });
-          Receipts.fetchNewItems();
+            Receipts.fetchNewItems();
+            this.rollUpForm();
         },
 
         events: {
