@@ -14,6 +14,7 @@ $(function(){
         idAttribute: "id"
     });
 
+
     window.ReceiptList = Backbone.Collection.extend({
         model: Receipt,
         pageNumber:1,
@@ -53,6 +54,60 @@ $(function(){
 
 
     window.Receipts = new ReceiptList;
+
+    window.RowEditor = Backbone.View.extend({
+        tagName: 'div',
+        template: _.template($('#editor-template').html()),
+        events: {
+            'submit form#update' : 'updateReceipt',
+            'keyup' : 'escape'
+        },
+        initialize: function() {
+            this.model.bind('change', this.render, this);
+            this.model.bind('destroy', this.remove, this);
+        },
+        escape: function(ev) {
+            if(ev.which == 27){
+                this.$el.remove();
+            }
+        },
+        render: function() {
+            $(this.el).html(this.template(this.model.toJSON));
+            this.setValues();
+            return this;
+        },
+        setValues: function() {
+            var that = this;
+            this.$('input, select').each(function(i) {
+                if (this.type !== 'submit') {
+                    if (this.name === 'amount') {
+                        this.value = parseFloat(that.model.get(this.name), 10);
+                    } else {
+                        this.value = that.model.get(this.name);
+                    }
+                }
+            });
+        },
+
+        updateReceipt: function(ev) {
+            var that = this;
+            ev.preventDefault();
+            var data = {};
+            for (var i = 0, len = ev.target.length; i < len; i++) {
+                var field = ev.target[i];
+                if (field.value) {
+                    data[field.name] = field.value;
+                }
+            }
+            this.model.set(data);
+            this.model.save(null, {patch: true,
+                success: function(model, response) {
+                    that.$el.remove();
+                }
+            });
+            return false;
+        }
+        });
 
     window.FilterView = Backbone.View.extend({
         tagName: 'div',
@@ -94,17 +149,26 @@ $(function(){
             this.model.bind('destroy', this.remove, this);
         },
         events: {
+            "click div.edit.show-edit" : "edit",
             "click td.delete" : "clear",
-            "mouseenter td" : "showFilter",
-            "mouseleave td" : "hideFilter",
+            "mouseenter td" : "showTools",
+            "mouseleave td" : "hideTools",
             "click .filter" : "filter"
         },
 
-        showFilter: function(ev) {
-            $('span.filter', ev.target).addClass('show-filter');
+        edit: function() {
+            var view = new RowEditor({model: this.model});
+            this.$el.before(view.render().el);
         },
-        hideFilter: function(ev) {
+
+        showTools: function(ev) {
+            $('span.filter', ev.target).addClass('show-filter');
+            $('div.edit', this.el).addClass('show-edit');
+        },
+
+        hideTools: function(ev) {
             $('span.filter', ev.target).removeClass('show-filter');
+            $('div.edit', this.el).removeClass('show-edit');
         },
 
         filter: function(ev) {
@@ -154,7 +218,7 @@ $(function(){
             $(window).bind('scroll', function(ev) {
                 Receipts.fetchOnScroll(ev);
             });
-            Receipts.fetchNewItems();
+          Receipts.fetchNewItems();
         },
 
         events: {

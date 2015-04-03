@@ -14,8 +14,8 @@ Todo:
 Input interface for individual transactions. Includes dropdowns for 'item' and 'method' columns based on what the user has added to the corresponding lists. If an entry is made that is a duplicate of a previous entry (date, amount and item are the same) the item will not be saved again.
 Todo:
   - Add dialog for when item is not saved because of duplication - check whether to save duplicate.
-  - Add primary keys so entries can be deleted or updated.
-  - Add filtering
+  - ~~Add primary keys so entries can be deleted or updated.~~
+  - ~~Add filtering~~
 
 ###Items & Categories
 Interface for adding custom categories and sub-categories. The items will be options in the receipt form dropdown for 'item', and the categories will be used as the primary grouping in the bar graphs.

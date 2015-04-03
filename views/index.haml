@@ -54,19 +54,28 @@
             $('#combinedChart').hide();
             $('#spendingChart').show();
         });
-        $('a.choice.combined').click(function() {
-            function getIncome() {
-                return $.ajax('/api/income/#{@date}');
+        $('a.choice.spending').click(function() {
+            if (incomeSeries) {
+                incomeSeries.hide();
             }
+        });
+        $('a.choice.combined').click(function() {
+            if (incomeSeries) {
+                incomeSeries.show();
+            } else {
+                function getIncome() {
+                    return $.ajax('/api/income/#{@date}');
+                }
 
-            if (!incomeSeries) {
-                getIncome().done(function(data) {
-                    var chartData = $.parseJSON(data);
+                if (!incomeSeries) {
+                    getIncome().done(function(data) {
+                        var chartData = $.parseJSON(data);
 
-                    chartData.type = 'line';
+                        chartData.type = 'line';
 
-                    incomeSeries = chart.addSeries(chartData);
-                });
+                        incomeSeries = chart.addSeries(chartData);
+                    });
+                }
             }
         });
     })();

@@ -170,10 +170,28 @@ get '/api/receipts/:id' do
 end
 
 delete '/api/receipts/:id' do
+    puts :id
     receipt = Receipt[params[:id]]
     if receipt
         receipt.delete
     end
+end
+
+patch '/api/receipts/:id' do
+    puts :id
+
+    insert_params = {}
+    request_payload = JSON.parse request.body.read
+    puts request_payload
+    request_payload.delete('submit')
+    request_payload.delete('id')
+
+    record = Receipt[params[:id]]
+    record.update(request_payload)
+    record.save_changes
+
+    return record.values.to_json
+
 end
 
 get '/api/income/:date' do

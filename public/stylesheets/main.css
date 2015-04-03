@@ -25,11 +25,18 @@ form#new { background-color: lightblue; top: 0px; position: fixed; width: 260px;
 form#new input, form#new select { float: right; }
 form#new .input { display: block; padding: 10px; }
 
+
+form#update {z-index: 30; width: 260px; margin: 0 auto; position: absolute; background-color:lightgreen;}
+form#update input, #row-editor select {float: right;}
+form#update .input {padding: 10px; display:block; }
+form#update .input[type=submit] {margin-bottom:10px; margin-right:10px;}
+
+
 /* Table */
 #content table { width: 809px; margin-top: 25px; display: inline-block;}
 #content table thead tr th { font-weight: bold; padding-bottom: 10px; text-align: left; }
 #content table tbody.new {background-color: lightyellow; }
-#content table td { padding-right: 10px}
+tr { padding-right: 10px}
 #content table td.hide {display: none;}
 #content table th.hide {display: none;}
 #content table td.amount {text-align: right;}
@@ -38,8 +45,14 @@ form#new .input { display: block; padding: 10px; }
 td.description, td.funding, td.expense, td.envelope, td.roommate, td.notes, td.tag, td.id {display: none;}
 td.date, th.date { width: 15%}
 td.method { width: 16%;}
+td.tools {position: relative; }
+td.tools div.edit {  height: 100%;  margin-left: -25px;
+  width: 40px;
+  z-index: 188;
+  position: absolute;
+  top: 0px;}
+td.tools div.edit.show-edit {background-repeat: no-repeat;background-image: url('/edit_pencil.png');background-position: 0px -6px; /* background-color: lightblue; */ background-size: 30px 30px;}
 #content table tbody tr:hover {background-color: lightblue;}
 #content table tbody td.delete {width:16px; height: 16px; background: url('/delete_16x16.gif') no-repeat;}
 #content table {margin-bottom: 20px;}
 #load-more-button {display: block; text-align: center; margin-top: 25px; background-color: lightgreen; width: 150px; padding: 10px; border-radius: 10px; margin: 0 auto;}
-
