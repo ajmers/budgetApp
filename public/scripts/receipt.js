@@ -223,11 +223,17 @@ $(function(){
 
         events: {
             "submit form#new" : "createReceipt",
+            "click #form-container .collapse" : "rollUpForm",
             "click a#load-more-button" : "fetchNewItems"
         },
 
         fetchNewItems: function(ev) {
             Receipts.fetchNewItems();
+        },
+
+        rollUpForm: function(ev) {
+            var form = this.$('form#new');
+            form.animate({'height': 'toggle'}, 200);
         },
 
         createReceipt: function(ev) {

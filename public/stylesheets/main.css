@@ -21,15 +21,18 @@ div.filter div.name { display: inline-block; width: 100px; border-right: none; b
 div.filter div.value { display: inline-block; width: 140px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
 
 /* Forms */
-form#new { background-color: lightblue; top: 0px; position: fixed; width: 260px; margin: 0 auto; right: 0; margin-top: 20px; margin-right: 20px;}
+#form-container {position: fixed;top: 0px;  width: 260px; margin: 0 auto; right: 0; margin-top: 20px; margin-right: 20px; }
+form#new { overflow: hidden; background-color: lightblue; }
 form#new input, form#new select { float: right; }
+form#new div.submit input {z-index: 220;}
 form#new .input { display: block; padding: 10px; }
+#form-container .collapse {height: 20px; color: white; font-weight: bold; width: 100%; background-color: grey; text-align:center; border-bottom-left-radius:10px; border-bottom-right-radius: 10px; position:relative ; top: -15px;}
 
 
 form#update {z-index: 30; width: 260px; margin: 0 auto; position: absolute; background-color:lightgreen;}
 form#update input, #row-editor select {float: right;}
 form#update .input {padding: 10px; display:block; }
-form#update .input[type=submit] {margin-bottom:10px; margin-right:10px;}
+form#update .input[type=submit] {margin-bottom:10px; margin-right:10px; }
 
 
 /* Table */
